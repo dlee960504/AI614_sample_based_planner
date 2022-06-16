@@ -9,7 +9,7 @@ import pybullet as p
 import pybullet_data
 from collections import namedtuple
 from attrdict import AttrDict
-from pyRobotiqGripper import *
+#from pyRobotiqGripper import *
 real = False
 
 def setup_sisbot(p, uid):

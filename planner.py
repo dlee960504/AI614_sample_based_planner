@@ -3,7 +3,7 @@ import numpy as np
 import gym
 import random
 import time
-
+import math
 import pybullet as p
 
 class BaseTreeNode():
@@ -91,7 +91,8 @@ class RandomTreePlanner(BaseTreePlanner):
 
         return node
 
-    def sample_action(self, node, max_cnt=100):
+    def sample_action(self, max_cnt=50):
+        node = self.pick_node()
         curr_pose = node.value
         action = self.env.action_space.sample()
         cnt = 0
@@ -101,7 +102,7 @@ class RandomTreePlanner(BaseTreePlanner):
             action = self.env.action_space.sample()
             #print(action)
             cnt += 1
-        return action
+        return action, node
 
     def collision_check(self, curr_pose, action)->bool:
         # True: good to go
@@ -121,11 +122,11 @@ class RandomTreePlanner(BaseTreePlanner):
             return None
         new_node = None
         while not self.terminated:
-            node = self.pick_node()
+            #node = self.pick_node()
             try:
-                action = self.sample_action(node)
-            except ValueError:
-                print('Unable to Sample an action. Let me try again.')
+                action, node = self.sample_action()
+            except ValueError as e:
+                print(e)
                 self.resetArm()
                 # new_node = None
                 # raise ValueError('Action Sampling Failed')
@@ -135,13 +136,14 @@ class RandomTreePlanner(BaseTreePlanner):
             self.nodes.append(new_node)
             
             if slow:
-                time.sleep(0.1)
+                time.sleep(1)
         
         return new_node
 
     def resetArm(self):
         for i, cid in enumerate(self.env.cids):
-            self.env._arm[i].resetJointPoses()
+            #self.env._arm[i].resetJointPoses()
+            self.env._arm[i].action(np.random.uniform(low=-math.pi/2, high=math.pi/2, size=(8,)))
             for _ in range(self.env.actionRepeat):
                 p.stepSimulation(physicsClientId=cid)
 
@@ -177,10 +179,23 @@ class RRTplanner(RandomTreePlanner):
     def __init__(self, environment:gym.Env, visualize:bool=False):
         super().__init__(environment, visualize)
 
-    def pick_node(self):
+    def sample_action(self, max_cnt=100):
+        action = self.env.action_space.sample()
+        node = self.pick_node(action)
+        curr_pose = node.value
+        cnt = 0
+        while self.collision_check(curr_pose[:8], action):
+            if cnt > max_cnt:
+                raise ValueError('Failed to sample action within 1000 samples. Please Check Joint Lock Situation.')
+            action = self.env.action_space.sample()
+            #print(action)
+            cnt += 1
+        return action, node
+
+    def pick_node(self, action):
         # go through each node to find the minimum heaurstics
         min_node = self.nodes[0]
-        goal = self.env.goal_pos
+        goal = action[:3]
         min_d = distance(goal, min_node.value[-7:-4])
         for node in self.nodes[1:]:
             pos = node.value[-7:-4]

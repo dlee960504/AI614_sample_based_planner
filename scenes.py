@@ -7,30 +7,30 @@ import os
 turn = math.pi/8
 
 urdfRoot=pybullet_data.getDataPath()
-meshPath = os.getcwd()+"/move_ur5/meshes/objects/"
-print(meshPath)
 up_rot = p.getQuaternionFromEuler([-math.pi/2, math.pi,0]) # the transform from Z-Y axis up. Most meshes are Z up.
 def scene_construction(cid, goal_pos=[0.2, 0.2, 0.2]):
 	p.setAdditionalSearchPath(urdfRoot)
+
 	planeID = p.loadURDF("plane.urdf", physicsClientId=cid, useMaximalCoordinates=True)
-	#wallID = p.loadURDF('move_ur5/obj/wall/wall.urdf', useFixedBase=True, basePosition=[0,0,0], globalScaling=0.002)
+	#wallID = p.loadURDF('obj/obstacles/wall.urdf', useFixedBase=True, basePosition=[0,-9.5,0], globalScaling=0.02)
+	obstacle1ID = p.loadURDF('obj/obstacles/obstacle1.urdf', useFixedBase=True, basePosition=[-0.3, 0.5, 0.9], globalScaling=0.007)
+	obstacle2ID = p.loadURDF('obj/obstacles/obstacle2.urdf', useFixedBase=True, basePosition=[-0.6, -0.6, 0.3], globalScaling=0.01)
+	obstacle3ID = p.loadURDF('obj/obstacles/obstacle2.urdf', useFixedBase=True, basePosition=[0.2, 0.4, 0.3], globalScaling=0.007)
+	obstacle4ID = p.loadURDF('obj/obstacles/obstacle2.urdf', useFixedBase=True, basePosition=[0.5, -0.4, 0.9], globalScaling=0.007)
 	load_goal_region_ball(goal_pos, cid)
-	'''
-	visualShapeId=p.createVisualShape(shapeType=p.GEOM_MESH, fileName="./move_ur5/obj/book/Book_05.obj",
-										rgbaColor=[r, g, b, 1], visualFramePosition=pos,
-										meshScale=meshScale)
-	
-	collisionShapeId = p.createCollisionShape(shapeType=p.GEOM_MESH, fileName="./move_ur5/obj/book/Book_05.obj",
-												collisionFramePosition=pos, meshScale=meshScale)
-	p.createMultiBody(baseMass=1, baseInertialFramePosition=pos, baseCollisionShapeIndex=collisionShapeId,
-						baseVisualShapeIndex=visualShapeId, basePosition=pos, baseOrientation=p.getQuaternionFromEuler(bori),useMaximalCoordinates=True)
-	'''
+	#load_obstacle_box(position=[-0.2, 0.5, 0.4], dimension=[0.5, 0.3, 0.4], cid=cid)
 
 def load_goal_region_ball(position, cid):
-	visualShapeId=p.createVisualShape(shapeType=p.GEOM_SPHERE, radius=0.1, rgbaColor=[255, 0, 0, 1], visualFramePosition=[0, 0, 0], physicsClientId=cid)
-	#collisionShapeId = p.createCollisionShape(shapeType=p.GEOM_SPHERE, radius=0.1, collisionFramePosition=position)
+	visualShapeId=p.createVisualShape(shapeType=p.GEOM_SPHERE, radius=0.1, rgbaColor=[1, 0, 0, 0.5], visualFramePosition=[0, 0, 0], physicsClientId=cid)
 
 	p.createMultiBody(baseInertialFramePosition=position, baseVisualShapeIndex=visualShapeId, basePosition=position, useMaximalCoordinates=True, physicsClientId=cid)
+
+def load_obstacle_box(position, dimension, cid):
+	visualShapeId = p.createVisualShape(shapeType=p.GEOM_BOX, halfExtents=dimension, rgbaColor=[1, 1, 0, 1], visualFramePosition=[0, 0, 0], physicsClientId=cid)
+	collisionShapeId = p.createCollisionShape(shapeType=p.GEOM_BOX, halfExtents=dimension, collisionFramePosition=[0, 0, 0], physicsClientId=cid)
+
+	p.createMultiBody(baseMass=1, baseInertialFramePosition=position, baseCollisionShapeIndex=collisionShapeId,
+						baseVisualShapeIndex=visualShapeId, basePosition=position, useMaximalCoordinates=True, physicsClientId=cid)
 
 def load_arm_dim_up(arm, pose, cid, dim = 'Z'):
 	_arm = ur5(cid=cid)

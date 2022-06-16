@@ -35,7 +35,7 @@ class armEnv(gym.Env):
         self.max = 0.5 * self.arm_range
 
         # (x, y, z, roll, pitch, yaw) of end-effector
-        self.action_space = spaces.Box(low=np.array([self.min, 0, 0, -math.pi, -math.pi, -math.pi]),
+        self.action_space = spaces.Box(low=np.array([self.min, self.min, 0, -math.pi, -math.pi, -math.pi]),
                                        high=np.array([self.max, self.max, self.max, math.pi, math.pi, math.pi]), dtype=np.float32)
 
         self.goal_pos = goal_pos
@@ -75,11 +75,11 @@ class armEnv(gym.Env):
             p.setPhysicsEngineParameter(numSolverIterations=150, physicsClientId=cid)
             if not self.vr:
                 p.setTimeStep(self.timeStep, physicsClientId=cid)
-            scene_construction(cid, self.goal_pos)
-            p.setGravity(0, 0, -10, physicsClientId=cid)
+            p.setGravity(0, 0, -10, physicsClientId=cid)            
             self._arm.append(load_arm_dim_up(self.arm_name, self.arm_init_pose, cid, dim='Z'))
+            scene_construction(cid, self.goal_pos)
             p.setRealTimeSimulation(1, physicsClientId=cid)
-            for _ in range(120):
+            for _ in range(int(1/self.timeStep)):
                 p.stepSimulation(physicsClientId=cid)
 
     def render(self, mode='human', close=False):
@@ -145,7 +145,7 @@ class armEnv(gym.Env):
         return [seed]
 
     # close / termination condition
-    def check_termination(self, eps=0.05):
+    def check_termination(self, eps=0.1):
         """
         check whether the situation satisfies the termination condition
         
@@ -189,7 +189,7 @@ class armEnv(gym.Env):
         for c in contacts:
             bodys.append(c[1:3])
         
-        print(action)
+        print(bodys)
         result = len(contacts) > 0
 
         return result
