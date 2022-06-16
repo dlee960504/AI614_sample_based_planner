@@ -1,4 +1,3 @@
-from more_itertools import collapse
 import numpy as np
 import gym
 import random

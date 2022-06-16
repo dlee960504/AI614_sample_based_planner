@@ -1,4 +1,3 @@
-from sympy import re
 from armEnv import armEnv
 from planner import *
 import argparse

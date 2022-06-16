@@ -1,10 +1,8 @@
-from ctypes.wintypes import PHKEY
 import gym
 from gym import spaces
 from gym.utils import seeding
 from scenes import *
 import numpy as np
-import time
 
 def range_coordinate(eye_z=1, proj_fov=80.0):
     return 2 * eye_z * np.tan(math.radians(proj_fov / 2))
