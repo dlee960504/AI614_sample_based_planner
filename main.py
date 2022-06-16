@@ -1,6 +1,7 @@
 from armEnv import armEnv
 from planner import *
 import argparse
+import time
 
 def get_args():
     parser = argparse.ArgumentParser(description='Please specify the model (i.e. Random, Heuristic, RRT')
@@ -27,4 +28,4 @@ if __name__ == '__main__':
     traj = planner.plan(slow=False)
     print('Executing Computed Trajectory')
     planner.execute(traj)
-    breakpoint()
+    time.sleep(5)
